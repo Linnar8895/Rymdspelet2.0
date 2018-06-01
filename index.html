@@ -74,9 +74,6 @@
         if(keyboard.m == true){
             if(ship2.weapon == "2"){
             bullets.push(new bullet(2));
-            while(keyboard.m == true){
-                loopSound("./content/laserfire.mp3");
-            }
             //console.log(bullets); //DEBUG
     
             }else if(ship2.weapon == "1"){
@@ -102,7 +99,7 @@
         ship2.draw(2);
     }
     function ship(identity){
-    
+        this.playername = prompt("Enter a player name: ");
         this.shipmodel = prompt("Choose your ship:\n (1)The Rocinante - Sturdy and reliable, but a little slow.\n(2)The Razorback - Fast and agile, though a bit on the fragile side");
         this.weapon = prompt("What will be your weapon of choice?\nChoose (1) lasers or (2) cannons.");
         
@@ -213,8 +210,11 @@
                 this.multi = -1;
                 this.color = "yellow";
         }
-        if(playername == "mimmie"){
-            this.color = mixColor(random(255),random(255),random(255))
+        if(identity == 1 && ship1.playername == "mimmie"){ //easter-egg!
+            this.color = mixColor(random(255),random(255),random(255));
+        }
+        if(identity == 2 && ship2.playername == "mimmie"){
+            this.color = mixColor(random(255),random(255),random(255));
         }
         
         this.dx = 20;
@@ -246,11 +246,14 @@
     }
 
     function status(){
+        healthstring = "'s Health: ";
+        P1HPstep1 = ship1.playername.concat(healthstring);
+        P2HPstep1 = ship2.playername.concat(healthstring);
+        P1HP = P1HPstep1.concat(ship1.health);
+        P2HP = P2HPstep1.concat(ship2.health);
         picture(xtot/2 - 212, -15, "./content/Pixelsign.png");
-        text(xtot/2 - 140, 70, 18, "P1 Health:", "black");
-        text(xtot/2 - 140, 98, 18, "P2 Health:", "black");
-        text(xtot/2, 70, 18, ship1.health, "black");
-        text(xtot/2, 98, 18, ship2.health, "black");
+        text(xtot/2 - 140, 70, 18, P1HP, "black");
+        text(xtot/2 - 140, 98, 18, P2HP, "black");
 
         if(ship1.health <= 0){
             picture(xtot/2 -218, 300, "./content/winnersign2.png");
