@@ -16,7 +16,7 @@
     </body>
 </html>
 
-<script src="http://spelprogrammering.nu/simple.js">
+<script src="content/simple.js">
 
     xtot = totalWidth;
     ytot = totalHeight;
@@ -171,7 +171,7 @@
         this.dx = 70; //Speed of projectiles
         this.x = this.spawnx;
         this.y = this.spawny;
-        //playSound("./content/laserfire.mp3", 0.5); // play laserfire sound when projectile is created
+        playSound("./content/laserfire.mp3", 0.5); // play laserfire sound when projectile is created
 
         this.update = function(){ // function to update position and check outofbounds for projectile, as well as if a projectile has hit a ship.
     
