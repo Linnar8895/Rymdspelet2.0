@@ -1,0 +1,270 @@
+<html>
+    <head>
+        <style type = "text/css">
+            body {
+                overflow: hidden;
+                margin: 0;
+            }
+        </style>
+        <title>Asteroid Fighters 1!</title>
+    </head>
+    <body>
+        <video width=1920 autoplay loop controls>
+            <source src="content/planetloop.mp4" type="video/mp4">
+        </video>
+        </audio>
+    </body>
+</html>
+
+<script src="http://spelprogrammering.nu/simple.js">
+
+    xtot = totalWidth;
+    ytot = totalHeight;
+    bullets = []; //array of all bullet objects
+    lasers = []; //array of all laser objects
+    outofbounds = false; //boolean used when checking if a bullet or laser has exited the screen 
+    ship1hit = false;  //booleans used when checking hits
+    ship2hit = false;
+    musicstarted = false; //If the game is ran in Chrome, music will not be allowed until user has interacted with the canvas
+    updatesPerSecond = 30;
+    
+    function start(){
+        preloadSound("./content/cannonfire.mp3"),//load all sounds to be used
+        preloadSound("./content/FTL02MilkyWay.mp3"); 
+        preloadSound("./content/laserfire.mp3");
+        alert("Welcome to Asteroid Fighters 1! \n Player 1, get ready to choose your loadout!");
+        ship1 = new ship(1); //create both ships
+        alert("Player 2, choose your loadout!");
+        ship2 = new ship(2);
+        alert("Everyone ready? Controls are: \n Player 1: W and S to move, Z to shoot. \n Player 2: Arrowkeys up and down to move, M to shoot.");
+        
+    }
+    function update(){
+        clearScreen();
+        //picture(0,0,"./content/asteroid-field.jpg"); //background image is now created in HTML, in order to use an MP4 instead of laggy GIF.
+        status();
+
+        //CONTROLS FOR BOTH SHIPS
+        if(keyboard.w == true){ 
+            ship1.y -= ship1.topspeed;
+            if(musicstarted == false){ // music starts after an interaction with the canvas, and is then kept looping
+                loopSound("./content/FTL02MilkyWay.mp3",1);
+                musicstarted = true;
+            }
+        }
+        if(keyboard.s == true){
+            ship1.y += ship1.topspeed;
+        }
+        if(keyboard.down == true){
+            ship2.y += ship2.topspeed;
+        }
+        if(keyboard.up == true){
+            ship2.y -= ship2.topspeed;
+        }
+        if(keyboard.z == true){
+            if(ship1.weapon == "2"){
+            bullets.push(new bullet(1));
+            //console.log(bullets); //DEBUG
+    
+            }else if(ship1.weapon == "1"){
+            lasers.push(new laser(1));
+            //console.log(lasers); //DEBUG
+            }
+        }
+        if(keyboard.m == true){
+            if(ship2.weapon == "2"){
+            bullets.push(new bullet(2));
+            while(keyboard.m == true){
+                loopSound("./content/laserfire.mp3");
+            }
+            //console.log(bullets); //DEBUG
+    
+            }else if(ship2.weapon == "1"){
+            lasers.push(new laser(2));
+            //console.log(lasers); //DEBUG
+            }
+        }
+        for(i = 0; i<bullets.length; i++){ //Check all bullets/lasers for being out of bounds, if so remove them.
+                bullets[i].update();
+                if(outofbounds == true){
+                    bullets.splice(i,1);
+                    outofbounds = false;
+                }
+        }
+        for(i = 0; i<lasers.length; i++){
+                lasers[i].update();
+                if(outofbounds == true){
+                    lasers.splice(i,1);
+                    outofbounds = false;
+                }
+        }
+        ship1.draw(1); //draw both ships
+        ship2.draw(2);
+    }
+    function ship(identity){
+    
+        this.shipmodel = prompt("Choose your ship:\n (1)The Rocinante - Sturdy and reliable, but a little slow.\n(2)The Razorback - Fast and agile, though a bit on the fragile side");
+        this.weapon = prompt("What will be your weapon of choice?\nChoose (1) lasers or (2) cannons.");
+        
+        if(this.weapon == 1){ //set damage per shot for each ship, based on user choice weapon
+            this.damage = 2.5;
+        } else if(this.weapon == 2){
+            this.damage = 1.5;
+        }
+        if(this.shipmodel == 1){ //set properties of ship, based on user choice shipmodel
+            this.acceleration = 1;
+            this.topspeed = 15;
+            this.health = 1000;
+            this.length = 368;
+            this.halfwidth = 62.5;
+        } else if(this.shipmodel == 2){ 
+            this.acceleration = 2;
+            this.topspeed = 20;
+            this.health = 700;
+            this.length = 184;
+            this.halfwidth = 46.5;
+        }
+    
+        if(identity == 1){ //set starting coordinates of ships based on identity, 1 = left ship, 2 = right ship.
+        this.x = 0;
+        this.y = ytot/2;
+        }else if(identity == 2){
+        this.x = xtot - this.length;
+        this.y = ytot/2;
+        }
+    
+        this.draw = function(identity){ //draw the correct orientation and shipmodel based on identity and user choice shipmodel
+    
+            if(this.shipmodel == "1" && identity == 1){
+                picture(this.x,this.y, "./content/shipmodel1L.png");
+            } else if(this.shipmodel == "1" && identity == 2){
+                picture(this.x,this.y, "./content/shipmodel1R.png");
+            } else if(this.shipmodel == "2" && identity == 1){
+                picture(this.x,this.y, "./content/shipmodel2L.png");
+            } else if(this.shipmodel == "2" && identity == 2) {
+                picture(this.x,this.y, "./content/shipmodel2R.png");
+            }
+            if(ship1hit == true){ //check whether or not ship has been hit, and subtract opposing ships damage stat from ship health
+                ship1.health -= ship2.damage;
+                ship1hit = false;
+                console.log(ship1.health);
+                console.log("ship1 hit");
+            }
+            if(ship2hit == true){
+                ship2.health -= ship1.damage;
+                ship2hit = false;
+                console.log(ship2.health);
+                console.log("ship2 hit");
+             }
+        }    
+    }
+
+    function laser(identity){ // controls creation of new laser shots, same principle in bullets
+    
+        if(identity == 1){ // define spawnpoints for projectile based on identity
+                this.spawnx = ship1.length;
+                this.spawny = ship1.y + ship1.halfwidth;
+                this.multi = 1;
+        }
+        if(identity == 2){
+                this.spawnx = xtot - ship2.length;
+                this.spawny = ship2.y + ship2.halfwidth;
+                this.multi = -1;
+        }
+        this.dx = 70; //Speed of projectiles
+        this.x = this.spawnx;
+        this.y = this.spawny;
+        //playSound("./content/laserfire.mp3", 0.5); // play laserfire sound when projectile is created
+
+        this.update = function(){ // function to update position and check outofbounds for projectile, as well as if a projectile has hit a ship.
+    
+            picture(this.x,this.y, "./content/laser.png");
+            if(this.y + 3 > ytot || this.y - 3 < 0){
+                this.dy *= -1;
+            }
+    
+            this.x += this.dx * this.multi;
+            this.y += -3 + random(6); // Adjust this to change spread of weapon
+            if(this.x < 0 || this.x > xtot){ // Check if shots go out of bounds
+                outofbounds = true;
+            }
+            if(identity == 2 && this.x < ship1.x + ship1.length && this.x > 0 && this.y < ship1.y + 2 * ship1.halfwidth && this.y > ship1.y){ //check for shots hitting the ships hitboxes
+                ship1hit = true;
+                outofbounds = true;
+            }
+            if(identity == 1 && this.x > ship2.x && this.x < xtot && this.y < ship2.y + 2 * ship2.halfwidth && this.y > ship2.y){
+                ship2hit = true;
+                outofbounds = true;
+            }   
+        }
+    }
+    
+    function bullet(identity){ //same principle as lasers
+    
+        if(identity == 1){
+                this.spawnx = ship1.x + ship1.length;
+                this.spawny = ship1.y + ship1.halfwidth;
+                this.multi = 1;
+                this.color = "yellow";
+        }
+        if(identity == 2){
+                this.spawnx = xtot - ship2.length;
+                this.spawny = ship2.y + ship2.halfwidth;
+                this.multi = -1;
+                this.color = "yellow";
+        }
+        if(playername == "mimmie"){
+            this.color = mixColor(random(255),random(255),random(255))
+        }
+        
+        this.dx = 20;
+        this.x = this.spawnx;
+        this.y = this.spawny;
+        playSound("./content/cannonfire.mp3", 0.5);
+
+        this.update = function(){
+    
+            circle(this.x,this.y,5,this.color);
+    
+            if(this.y + 3 > ytot || this.y - 3 < 0){
+                this.dy *= -1;
+            }
+            this.x += this.dx * this.multi;
+            this.y += -15 + random(30);
+            if(this.x < 0 || this.x > xtot){ //Out of bounds checker
+                outofbounds = true;
+            }
+            if(identity == 2 && this.x < ship1.x + ship1.length && this.x > 0 && this.y < ship1.y + 2 * ship1.halfwidth && this.y > ship1.y){ //check for shots hitting the ships hitboxes
+                ship1hit = true;
+                outofbounds = true;
+            }
+            if(identity == 1 && this.x > ship2.x && this.x < xtot && this.y < ship2.y + 2 * ship2.halfwidth && this.y > ship2.y){
+                ship2hit = true;
+                outofbounds = true;
+            }
+        }
+    }
+
+    function status(){
+        picture(xtot/2 - 212, -15, "./content/Pixelsign.png");
+        text(xtot/2 - 140, 70, 18, "P1 Health:", "black");
+        text(xtot/2 - 140, 98, 18, "P2 Health:", "black");
+        text(xtot/2, 70, 18, ship1.health, "black");
+        text(xtot/2, 98, 18, ship2.health, "black");
+
+        if(ship1.health <= 0){
+            picture(xtot/2 -218, 300, "./content/winnersign2.png");
+            text(xtot/2 - 140, 120, 18, "Restarting game... ", "red");
+            setTimeout(this.exit,7000);
+        }
+        else if(ship2.health <= 0){
+            picture(xtot/2 -218, 300, "./content/winnersign1.png");
+            text(xtot/2 - 140, 125, 18, "Restarting game... ", "red");
+            setTimeout(this.exit,7000);
+        }
+
+        this.exit = function(){ //reload function does not work correctly with setTimeout, so it is in its own exit function instead.
+            location.reload();
+        }
+    }
+    </script>
